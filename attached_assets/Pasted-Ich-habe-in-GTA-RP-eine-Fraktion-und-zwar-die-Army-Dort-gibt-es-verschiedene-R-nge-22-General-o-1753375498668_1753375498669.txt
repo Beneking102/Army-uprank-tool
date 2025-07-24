@@ -1,0 +1,70 @@
+Ich habe in GTA RP eine Fraktion und zwar die Army. Dort gibt es verschiedene Ränge.
+
+22 - General of the Army
+21 - Sec. General of the Army
+20 - Lieutenant General
+19 - Major General
+18 - Brigadier General
+17 -  Army Management
+16 - Fieldmedic
+15 - Colonel
+14 - Major
+13 - Captain
+12- First Lieutenant
+11 - Second Lieutenant
+10 - Sergeant Major
+9 - Master Sergeant
+8 - Sergeant First Class
+7 -  Staff Sergeant
+6 - Sergeant 
+5 - Corporal
+4 - Specialist
+3 - Private First Class
+2 - Private
+1 - Rekrut
+
+Dort ist dann Mannschaft normale Ränge von Rang 2 bis Rang 5
+Rang ist außer acht zu lassen.
+Unteroffiziersstab Rang 6-10
+
+Offiziersstab Rang 11-15.
+
+Alles Über 15 kannst du auch ignorieren.
+
+Jetzt ist meine Idee ein Punktesystem dafür einzubauen das man auf der Webseite dann die ganzen Qualifikationen Sinnvoll eingeben kann etc.
+
+Die Idee ist.
+Es gibt Sonderposten wie:
+Drill Seargents
+GWD Ausbilder
+Field Medics
+U1 Ausbilder 
+Personalabteilung
+Aktenkunde Ausbilder
+Leitstellenausbilder
+
+Aufgaben wie U1 Ausbilder, Aktenkunde Ausbilder sind Mittelschwer
+Aufgaben wie Leitstellenausbilder und Field Medics sind Einfach
+Aufgaben wie Personalabteilung, Drill Seargents, GWD Ausbilder sind Schwer.
+
+Bereiche wie Abteilungsleitung oder Abteilungsausbilder sind ebenfalls bereiche die jeweils Zusatzpunkte geben sollen.
+
+Die Aktivität wird manuell geprüft.
+Die Idee bei der Aktivität ist, wenn man an dem Tag da war, bekommt man pro Tag z.B. 5 Punkte.
+
+Dadurch hätte man in dem Beispiel 35 Punkte pro Woche.
+
+Jetzt soll man für Rang 2 auf 3 ca. 2 Wochen brauchen.
+Ergo etwa 100 Punkte (nur ein Beispiel)
+
+Dann hat man es in 3 Wochen.
+Wenn man aber jetzt Abteilungs Ausbilder ist bekommt man pro Woche 15 Punkte dazu.
+Dadurch bekommt man 50 Punkte pro Woche und hat es in 2 Wochen.
+
+
+Jetzt möchte das es alles Sinnvoll aufgebaut ist.
+Ich möchte eine Liste wann es für welchen Rang sinn macht. Dort ist zu beachten das ich eine Liste mit Total Punkte und eine Liste mit Punkten von Rang auf nächsten Rang. Also Rang 2 auf 3 100 Punkt z.b und von 3 auf 4 150 Punkte und Total Rang 4 Punkte sind 250 Punkte.
+
+Auf der Seite muss auch eine Datenbank mit verknüpft sein etc. und man soll es jede Woche eintragen können pro der Person und dann die Position auswählen und generell abspeichern.
+
+Jetzt möchte ich das du mir einen Detaillierten Prompt für eine KI schreibst welche mir das umsetzen soll. Es soll das NC- Army Uprank Tool sein und auch einen Login beinhalten, damit es nur ausgewählte personen sehen und nutzen können.
