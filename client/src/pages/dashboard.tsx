@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
 import StatsGrid from "@/components/dashboard/StatsGrid";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import RankDistribution from "@/components/dashboard/RankDistribution";
@@ -33,30 +31,54 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
+    <div className="space-y-8 p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+      {/* Header Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p className="text-gray-600">Willkommen im NC-Army Verwaltungssystem</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-500">Letztes Update</div>
+            <div className="text-lg font-semibold text-military-blue">
+              {new Date().toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Dashboard" subtitle="Übersicht über die Army-Verwaltung" />
+      {/* Stats Section */}
+      <StatsGrid />
+      
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <div className="xl:col-span-2">
+          <ActivityFeed />
+        </div>
         
-        <main className="flex-1 overflow-y-auto p-6">
-          <StatsGrid />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-            <div className="lg:col-span-2">
-              <ActivityFeed />
-            </div>
-            
-            <div className="space-y-6">
-              <QuickActions />
-              <RankDistribution />
-            </div>
-          </div>
+        <div className="xl:col-span-1">
+          <QuickActions />
+        </div>
+        
+        <div className="xl:col-span-1">
+          <RankDistribution />
+        </div>
+      </div>
 
-          <div className="mt-8">
-            <PersonnelTable />
-          </div>
-        </main>
+      {/* Personnel Overview */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-military-blue to-blue-600">
+          <h2 className="text-xl font-semibold text-white">Personalübersicht</h2>
+          <p className="text-blue-100 text-sm">Aktuelle Mitglieder und ihre Ränge</p>
+        </div>
+        <PersonnelTable />
       </div>
     </div>
   );

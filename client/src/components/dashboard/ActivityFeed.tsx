@@ -56,41 +56,19 @@ export default function ActivityFeed() {
     }
   };
 
-  // Mock activities for now - in real app, combine from multiple sources
-  const mockActivities = [
-    {
-      id: 1,
-      type: 'promotion',
-      user: 'Max Mustermann',
-      action: 'wurde zu Sergeant befördert',
-      timestamp: 'vor 2 Stunden',
-      badge: '+150 Punkte'
-    },
-    {
-      id: 2,
-      type: 'points',
-      user: 'Anna Schmidt',
-      action: 'hat 35 Punkte für Wochenaktivität erhalten',
-      timestamp: 'vor 4 Stunden',
-      badge: 'Aktivität'
-    },
-    {
-      id: 3,
-      type: 'special',
-      user: 'Tom Weber',
-      action: 'wurde zum Drill Sergeant ernannt',
-      timestamp: 'vor 1 Tag',
-      badge: 'Sonderposition'
-    },
-    {
-      id: 4,
-      type: 'training',
-      user: 'Lisa Müller',
-      action: 'hat eine Ausbildung abgeschlossen',
-      timestamp: 'vor 2 Tagen',
-      badge: 'Ausbildung'
-    }
-  ];
+  // Show real promotions only - no fake data
+  const realActivities = (promotions || []).map(promotion => ({
+    id: promotion.id,
+    type: 'promotion' as const,
+    user: `Personnel ID ${promotion.personnelId}`,
+    action: `wurde befördert`,
+    timestamp: promotion.promotionDate ? new Date(promotion.promotionDate).toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }) : 'Unbekannt',
+    badge: `${promotion.pointsAtPromotion} Punkte`
+  }));
 
   return (
     <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
@@ -118,9 +96,9 @@ export default function ActivityFeed() {
               </div>
             ))}
           </div>
-        ) : (
+        ) : realActivities.length > 0 ? (
           <div className="space-y-4">
-            {mockActivities.map((activity) => (
+            {realActivities.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-4">
                 <div className={`w-10 h-10 ${getActivityColor(activity.type)} rounded-full flex items-center justify-center flex-shrink-0`}>
                   {getActivityIcon(activity.type)}
@@ -136,6 +114,14 @@ export default function ActivityFeed() {
                 </Badge>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="text-gray-500 dark:text-gray-400">
+              <GraduationCap className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p className="text-sm">Noch keine Aktivitäten vorhanden</p>
+              <p className="text-xs mt-1">Beförderungen und andere Aktivitäten werden hier angezeigt</p>
+            </div>
           </div>
         )}
       </CardContent>
