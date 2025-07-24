@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, hashPassword } from "./auth";
 import { insertPersonnelSchema, insertPointEntrySchema, insertPromotionSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -9,16 +9,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+  // Get current user
+  app.get('/api/user', isAuthenticated, (req, res) => {
+    res.json(req.user);
   });
 
   // Dashboard routes
@@ -189,12 +182,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize database with default ranks and special positions
-  app.post('/api/initialize', isAuthenticated, async (req: any, res) => {
+  // Initialize database with default admin user, ranks and special positions
+  app.post('/api/initialize', async (req: any, res) => {
     try {
-      // Only allow admin users to initialize (you can customize this logic)
-      // For now, allow any authenticated user
+      const { username, password, firstName, lastName, email } = req.body;
       
+      // Check if admin user already exists
+      const existingAdmin = await storage.getAdminUserByUsername(username || 'admin');
+      if (existingAdmin) {
+        return res.status(400).json({ message: "Admin user already exists" });
+      }
+
+      // Create default admin user
+      const hashedPassword = await hashPassword(password || 'admin123');
+      await storage.createAdminUser({
+        username: username || 'admin',
+        password: hashedPassword,
+        firstName: firstName || 'Admin',
+        lastName: lastName || 'User',
+        email: email || 'admin@nc-army.local',
+        isActive: true,
+      });
+
       // Create default ranks
       const defaultRanks = [
         { level: 2, name: "Private", pointsRequired: 0, pointsFromPrevious: 0 },
@@ -241,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json({ message: "Database initialized successfully" });
+      res.json({ message: "Database initialized successfully with admin user and default data" });
     } catch (error) {
       console.error("Error initializing database:", error);
       res.status(500).json({ message: "Failed to initialize database" });

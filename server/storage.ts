@@ -1,12 +1,12 @@
 import {
-  users,
+  adminUsers,
   ranks,
   specialPositions,
   personnel,
   pointEntries,
   promotions,
-  type User,
-  type UpsertUser,
+  type AdminUser,
+  type InsertAdminUser,
   type Rank,
   type InsertRank,
   type SpecialPosition,
@@ -23,9 +23,11 @@ import { db } from "./db";
 import { eq, desc, and, gte, sum, count } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // Admin user operations
+  getAdminUserById(id: number): Promise<AdminUser | undefined>;
+  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
+  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUserLastLogin(id: number): Promise<void>;
   
   // Rank operations
   getRanks(): Promise<Rank[]>;
@@ -66,25 +68,27 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+  // Admin user operations
+  async getAdminUserById(id: number): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+  async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
     return user;
+  }
+
+  async createAdminUser(userData: InsertAdminUser): Promise<AdminUser> {
+    const [user] = await db.insert(adminUsers).values(userData).returning();
+    return user;
+  }
+
+  async updateAdminUserLastLogin(id: number): Promise<void> {
+    await db
+      .update(adminUsers)
+      .set({ lastLogin: new Date() })
+      .where(eq(adminUsers.id, id));
   }
 
   // Rank operations
@@ -215,17 +219,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPointEntry(entry: InsertPointEntry): Promise<PointEntry> {
-    const totalWeekPoints = entry.activityPoints + entry.specialPositionPoints;
+    const totalWeekPoints = (entry.activityPoints || 0) + (entry.specialPositionPoints || 0);
     const [newEntry] = await db
       .insert(pointEntries)
       .values({ ...entry, totalWeekPoints })
       .returning();
     
-    // Update personnel total points
+    // Update personnel total points by recalculating from all entries
+    const pointSum = await db
+      .select({ total: sum(pointEntries.totalWeekPoints) })
+      .from(pointEntries)
+      .where(eq(pointEntries.personnelId, entry.personnelId));
+    
     await db
       .update(personnel)
       .set({
-        totalPoints: sum(pointEntries.totalWeekPoints),
+        totalPoints: Number(pointSum[0]?.total || 0),
         updatedAt: new Date(),
       })
       .where(eq(personnel.id, entry.personnelId));
@@ -287,7 +296,7 @@ export class DatabaseStorage implements IStorage {
     
     const totalPersonnel = totalResult.count;
     const activeMembers = activeResult.count;
-    const averagePoints = activeMembers > 0 ? Math.round((avgResult.avg || 0) / activeMembers) : 0;
+    const averagePoints = activeMembers > 0 ? Math.round(Number(avgResult.avg || 0) / activeMembers) : 0;
     
     return {
       totalPersonnel,
