@@ -17,14 +17,16 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Personnel, PersonnelWithDetails, Rank, SpecialPosition, InsertPersonnel } from "@shared/schema";
 
-const personnelSchema = z.object({
-  name: z.string().min(1, "Name ist erforderlich"),
-  currentRankId: z.string().min(1, "Rang ist erforderlich").transform(Number),
-  specialPositionId: z.string().optional().transform((val) => val ? Number(val) : undefined),
-  notes: z.string().optional(),
+const personnelFormSchema = z.object({
+  armyId: z.string().min(1, "Army-ID ist erforderlich"),
+  firstName: z.string().min(1, "Vorname ist erforderlich"),
+  lastName: z.string().min(1, "Nachname ist erforderlich"),
+  currentRankId: z.string().min(1, "Rang ist erforderlich"),
+  specialPositionId: z.string().default("none"),
+  joinDate: z.string().min(1, "Beitrittsdatum ist erforderlich"),
 });
 
-type PersonnelForm = z.infer<typeof personnelSchema>;
+type PersonnelFormData = z.infer<typeof personnelFormSchema>;
 
 function getRankCategory(level: number): string {
   if (level >= 2 && level <= 5) return "Mannschaft";
@@ -45,13 +47,15 @@ export default function Personnel() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<PersonnelForm>({
-    resolver: zodResolver(personnelSchema),
+  const form = useForm<PersonnelFormData>({
+    resolver: zodResolver(personnelFormSchema),
     defaultValues: {
-      name: "",
+      armyId: "",
+      firstName: "",
+      lastName: "",
       currentRankId: "",
-      specialPositionId: "",
-      notes: "",
+      specialPositionId: "none",
+      joinDate: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -72,12 +76,14 @@ export default function Personnel() {
 
   // Add personnel mutation
   const addPersonnelMutation = useMutation({
-    mutationFn: async (data: PersonnelForm) => {
+    mutationFn: async (data: PersonnelFormData) => {
       const response = await apiRequest("POST", "/api/personnel", {
-        name: data.name,
-        currentRankId: data.currentRankId,
-        specialPositionId: data.specialPositionId,
-        notes: data.notes,
+        armyId: data.armyId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        currentRankId: parseInt(data.currentRankId),
+        specialPositionId: data.specialPositionId && data.specialPositionId !== "none" ? parseInt(data.specialPositionId) : undefined,
+        joinDate: data.joinDate,
       });
       return response.json();
     },
@@ -107,7 +113,7 @@ export default function Personnel() {
       person.specialPosition?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const onSubmit = (data: PersonnelForm) => {
+  const onSubmit = (data: PersonnelFormData) => {
     addPersonnelMutation.mutate(data);
   };
 
@@ -140,17 +146,47 @@ export default function Personnel() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="armyId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Army-ID</FormLabel>
                       <FormControl>
-                        <Input placeholder="Vollständiger Name" {...field} />
+                        <Input placeholder="z.B. #A247" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vorname</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Vorname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nachname</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nachname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
                 <FormField
                   control={form.control}
@@ -190,7 +226,7 @@ export default function Personnel() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Keine Sonderposition</SelectItem>
+                          <SelectItem value="none">Keine Sonderposition</SelectItem>
                           {specialPositions.map((position) => (
                             <SelectItem key={position.id} value={position.id.toString()}>
                               {position.name} (+{position.bonusPointsPerWeek} Punkte/Woche)
@@ -205,17 +241,19 @@ export default function Personnel() {
 
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="joinDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notizen (optional)</FormLabel>
+                      <FormLabel>Beitrittsdatum</FormLabel>
                       <FormControl>
-                        <Input placeholder="Zusätzliche Informationen" {...field} />
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+
 
                 <div className="flex gap-3 pt-4">
                   <Button 
