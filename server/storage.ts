@@ -123,7 +123,7 @@ export class DatabaseStorage implements IStorage {
 
   // Personnel operations
   async getPersonnel(): Promise<PersonnelWithDetails[]> {
-    return await db
+    const result = await db
       .select({
         id: personnel.id,
         armyId: personnel.armyId,
@@ -136,13 +136,27 @@ export class DatabaseStorage implements IStorage {
         joinDate: personnel.joinDate,
         createdAt: personnel.createdAt,
         updatedAt: personnel.updatedAt,
-        currentRank: ranks,
-        specialPosition: specialPositions,
+        currentRank: {
+          id: ranks.id,
+          level: ranks.level,
+          name: ranks.name,
+          pointsRequired: ranks.pointsRequired,
+          pointsFromPrevious: ranks.pointsFromPrevious,
+        },
+        specialPosition: specialPositions.id ? {
+          id: specialPositions.id,
+          name: specialPositions.name,
+          difficulty: specialPositions.difficulty,
+          bonusPointsPerWeek: specialPositions.bonusPointsPerWeek,
+          description: specialPositions.description,
+        } : null,
       })
       .from(personnel)
       .leftJoin(ranks, eq(personnel.currentRankId, ranks.id))
       .leftJoin(specialPositions, eq(personnel.specialPositionId, specialPositions.id))
-      .orderBy(personnel.lastName, personnel.firstName) as any;
+      .orderBy(personnel.lastName, personnel.firstName);
+    
+    return result as PersonnelWithDetails[];
   }
 
   async getPersonnelById(id: number): Promise<PersonnelWithDetails | undefined> {
@@ -159,14 +173,27 @@ export class DatabaseStorage implements IStorage {
         joinDate: personnel.joinDate,
         createdAt: personnel.createdAt,
         updatedAt: personnel.updatedAt,
-        currentRank: ranks,
-        specialPosition: specialPositions,
+        currentRank: {
+          id: ranks.id,
+          level: ranks.level,
+          name: ranks.name,
+          pointsRequired: ranks.pointsRequired,
+          pointsFromPrevious: ranks.pointsFromPrevious,
+        },
+        specialPosition: specialPositions.id ? {
+          id: specialPositions.id,
+          name: specialPositions.name,
+          difficulty: specialPositions.difficulty,
+          bonusPointsPerWeek: specialPositions.bonusPointsPerWeek,
+          description: specialPositions.description,
+        } : null,
       })
       .from(personnel)
       .leftJoin(ranks, eq(personnel.currentRankId, ranks.id))
       .leftJoin(specialPositions, eq(personnel.specialPositionId, specialPositions.id))
-      .where(eq(personnel.id, id)) as any;
-    return person;
+      .where(eq(personnel.id, id));
+    
+    return person as PersonnelWithDetails | undefined;
   }
 
   async getPersonnelByArmyId(armyId: string): Promise<PersonnelWithDetails | undefined> {
@@ -183,14 +210,27 @@ export class DatabaseStorage implements IStorage {
         joinDate: personnel.joinDate,
         createdAt: personnel.createdAt,
         updatedAt: personnel.updatedAt,
-        currentRank: ranks,
-        specialPosition: specialPositions,
+        currentRank: {
+          id: ranks.id,
+          level: ranks.level,
+          name: ranks.name,
+          pointsRequired: ranks.pointsRequired,
+          pointsFromPrevious: ranks.pointsFromPrevious,
+        },
+        specialPosition: specialPositions.id ? {
+          id: specialPositions.id,
+          name: specialPositions.name,
+          difficulty: specialPositions.difficulty,
+          bonusPointsPerWeek: specialPositions.bonusPointsPerWeek,
+          description: specialPositions.description,
+        } : null,
       })
       .from(personnel)
       .leftJoin(ranks, eq(personnel.currentRankId, ranks.id))
       .leftJoin(specialPositions, eq(personnel.specialPositionId, specialPositions.id))
-      .where(eq(personnel.armyId, armyId)) as any;
-    return person;
+      .where(eq(personnel.armyId, armyId));
+    
+    return person as PersonnelWithDetails | undefined;
   }
 
   async createPersonnel(personnelData: InsertPersonnel): Promise<Personnel> {

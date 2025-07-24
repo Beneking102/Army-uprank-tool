@@ -45,6 +45,8 @@ function getRankCategoryColor(level: number): string {
 export default function Personnel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingPersonnel, setEditingPersonnel] = useState<PersonnelWithDetails | null>(null);
   const { toast } = useToast();
 
   const form = useForm<PersonnelFormData>({
@@ -113,8 +115,57 @@ export default function Personnel() {
       person.specialPosition?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Update personnel mutation
+  const updatePersonnelMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: PersonnelFormData }) => {
+      const response = await apiRequest("PATCH", `/api/personnel/${id}`, {
+        armyId: data.armyId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        currentRankId: parseInt(data.currentRankId),
+        specialPositionId: data.specialPositionId && data.specialPositionId !== "none" ? parseInt(data.specialPositionId) : undefined,
+        joinDate: data.joinDate,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/personnel"] });
+      setIsEditDialogOpen(false);
+      setEditingPersonnel(null);
+      form.reset();
+      toast({
+        title: "Erfolgreich",
+        description: "Personal wurde aktualisiert",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditPersonnel = (person: PersonnelWithDetails) => {
+    setEditingPersonnel(person);
+    form.reset({
+      armyId: person.armyId,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      currentRankId: person.currentRankId.toString(),
+      specialPositionId: person.specialPositionId?.toString() || "none",
+      joinDate: person.joinDate,
+    });
+    setIsEditDialogOpen(true);
+  };
+
   const onSubmit = (data: PersonnelFormData) => {
-    addPersonnelMutation.mutate(data);
+    if (editingPersonnel) {
+      updatePersonnelMutation.mutate({ id: editingPersonnel.id, data });
+    } else {
+      addPersonnelMutation.mutate(data);
+    }
   };
 
   // Statistics
@@ -275,6 +326,148 @@ export default function Personnel() {
             </Form>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Personnel Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Personal bearbeiten</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="armyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Army-ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. #A247" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vorname</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Vorname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nachname</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nachname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="currentRankId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Aktueller Rang</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Rang auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ranks.map((rank) => (
+                            <SelectItem key={rank.id} value={rank.id.toString()}>
+                              {rank.name} (Level {rank.level})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="specialPositionId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sonderposition (optional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value?.toString() || ""}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sonderposition auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Keine Sonderposition</SelectItem>
+                          {specialPositions.map((position) => (
+                            <SelectItem key={position.id} value={position.id.toString()}>
+                              {position.name} (+{position.bonusPointsPerWeek} Punkte/Woche)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="joinDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Beitrittsdatum</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    type="submit" 
+                    className="flex-1"
+                    disabled={updatePersonnelMutation.isPending}
+                  >
+                    {updatePersonnelMutation.isPending ? "Wird aktualisiert..." : "Aktualisieren"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setEditingPersonnel(null);
+                      form.reset();
+                    }}
+                  >
+                    Abbrechen
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Statistics Cards */}
@@ -354,12 +547,13 @@ export default function Personnel() {
                   <TableHead>Sonderposition</TableHead>
                   <TableHead>Gesamtpunkte</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredPersonnel.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="text-gray-500">
                         {searchTerm ? "Keine Suchergebnisse gefunden" : "Noch kein Personal hinzugefügt"}
                       </div>
@@ -405,9 +599,19 @@ export default function Personnel() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          Aktiv
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Aktiv
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditPersonnel(person)}
+                            className="ml-2"
+                          >
+                            Bearbeiten
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

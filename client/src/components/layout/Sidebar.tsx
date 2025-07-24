@@ -62,14 +62,14 @@ export default function Sidebar() {
             return (
               <li key={item.href}>
                 <Link href={item.href}>
-                  <a className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  <div className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
                     isActive 
                       ? 'bg-blue-700 text-white' 
                       : 'text-blue-200 hover:bg-blue-700 hover:text-white'
                   }`}>
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                  </a>
+                  </div>
                 </Link>
               </li>
             );
@@ -87,14 +87,14 @@ export default function Sidebar() {
             return (
               <li key={item.href}>
                 <Link href={item.href}>
-                  <a className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  <div className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
                     isActive 
                       ? 'bg-blue-700 text-white' 
                       : 'text-blue-200 hover:bg-blue-700 hover:text-white'
                   }`}>
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                  </a>
+                  </div>
                 </Link>
               </li>
             );

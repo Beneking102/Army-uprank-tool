@@ -57,7 +57,7 @@ export const specialPositions = pgTable("special_positions", {
   description: text("description"),
 });
 
-// Personnel table
+// Personnel table - Army members  
 export const personnel = pgTable("personnel", {
   id: serial("id").primaryKey(),
   armyId: varchar("army_id", { length: 20 }).notNull().unique(), // e.g., "#A247"
@@ -65,7 +65,7 @@ export const personnel = pgTable("personnel", {
   lastName: varchar("last_name", { length: 100 }).notNull(),
   currentRankId: integer("current_rank_id").notNull(),
   totalPoints: integer("total_points").notNull().default(0),
-  specialPositionId: integer("special_position_id"),
+  specialPositionId: integer("special_position_id"), // Keep single position for now, can be extended later
   isActive: boolean("is_active").notNull().default(true),
   joinDate: date("join_date").notNull().defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -76,9 +76,9 @@ export const personnel = pgTable("personnel", {
 export const pointEntries = pgTable("point_entries", {
   id: serial("id").primaryKey(),
   personnelId: integer("personnel_id").notNull(),
-  weekStart: date("week_start").notNull(), // Start of the week (Monday)
-  activityPoints: integer("activity_points").notNull().default(0), // 0-35 points
-  specialPositionPoints: integer("special_position_points").notNull().default(0),
+  weekStart: date("week_start").notNull(), // Start of the week (Sunday for German week structure)
+  activityPoints: integer("activity_points").notNull().default(0), // 0-35 points for activities
+  specialPositionPoints: integer("special_position_points").notNull().default(0), // Auto-calculated bonus points
   totalWeekPoints: integer("total_week_points").notNull(), // activityPoints + specialPositionPoints
   notes: text("notes"),
   enteredBy: varchar("entered_by").notNull(), // User ID who entered the points
