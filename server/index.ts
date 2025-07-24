@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
 
 const app = express();
 app.use(express.json());
@@ -34,6 +35,16 @@ app.use((req, res, next) => {
   });
 
   next();
+});
+
+// Add demo route before other routes
+app.get('/demo.html', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'demo.html'));
+});
+
+// Redirect root to demo
+app.get('/', (req, res) => {
+  res.redirect('/demo.html');
 });
 
 (async () => {
