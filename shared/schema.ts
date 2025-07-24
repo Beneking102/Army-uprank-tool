@@ -65,7 +65,7 @@ export const personnel = pgTable("personnel", {
   lastName: varchar("last_name", { length: 100 }).notNull(),
   currentRankId: integer("current_rank_id").notNull(),
   totalPoints: integer("total_points").notNull().default(0),
-  specialPositionId: integer("special_position_id"), // Keep single position for now, can be extended later
+  specialPositionIds: integer("special_position_ids").array().default([]), // Keep single position for now, can be extended later
   isActive: boolean("is_active").notNull().default(true),
   joinDate: date("join_date").notNull().defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -102,10 +102,6 @@ export const personnelRelations = relations(personnel, ({ one, many }) => ({
   currentRank: one(ranks, {
     fields: [personnel.currentRankId],
     references: [ranks.id],
-  }),
-  specialPosition: one(specialPositions, {
-    fields: [personnel.specialPositionId],
-    references: [specialPositions.id],
   }),
   pointEntries: many(pointEntries),
   promotions: many(promotions),

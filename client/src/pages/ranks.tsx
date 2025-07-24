@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,14 +44,15 @@ export default function Ranks() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
+    <div className="space-y-6 p-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Ränge & Beförderungen</h1>
+          <p className="text-gray-600 mt-1">Übersicht über das Rangsystem</p>
+        </div>
+      </div>
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Ränge & Beförderungen" subtitle="Übersicht über das Rangsystem" />
-        
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {ranksLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i}>
@@ -100,8 +100,6 @@ export default function Ranks() {
                 );
               })
             )}
-          </div>
-        </main>
       </div>
     </div>
   );

@@ -68,7 +68,7 @@ export default function Points() {
   const form = useForm<PointEntryForm>({
     resolver: zodResolver(pointEntrySchema),
     defaultValues: {
-      personnelId: 0,
+      personnelId: 1,
       weekStart: getCurrentWeek(),
       activityPoints: 0,
       notes: "",
@@ -166,7 +166,7 @@ export default function Points() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Person</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Person auswählen" />
