@@ -92,7 +92,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/point-entries', isAuthenticated, async (req, res) => {
     try {
       const personnelId = req.query.personnelId ? parseInt(req.query.personnelId as string) : undefined;
-      const entries = await storage.getPointEntries(personnelId);
+      const weekStart = req.query.weekStart as string;
+      const entries = await storage.getPointEntries(personnelId, weekStart);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching point entries:", error);
+      res.status(500).json({ message: "Failed to fetch point entries" });
+    }
+  });
+
+  app.get('/api/point-entries/:weekStart', isAuthenticated, async (req, res) => {
+    try {
+      const weekStart = req.params.weekStart;
+      const entries = await storage.getPointEntries(undefined, weekStart);
       res.json(entries);
     } catch (error) {
       console.error("Error fetching point entries:", error);
@@ -204,22 +216,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true,
       });
 
-      // Create default ranks
+      // Create German military ranks (Levels 2-15)
       const defaultRanks = [
-        { level: 2, name: "Private", pointsRequired: 0, pointsFromPrevious: 0 },
-        { level: 3, name: "Private First Class", pointsRequired: 100, pointsFromPrevious: 100 },
-        { level: 4, name: "Specialist", pointsRequired: 250, pointsFromPrevious: 150 },
-        { level: 5, name: "Corporal", pointsRequired: 400, pointsFromPrevious: 150 },
-        { level: 6, name: "Sergeant", pointsRequired: 600, pointsFromPrevious: 200 },
-        { level: 7, name: "Staff Sergeant", pointsRequired: 850, pointsFromPrevious: 250 },
-        { level: 8, name: "Sergeant First Class", pointsRequired: 1150, pointsFromPrevious: 300 },
-        { level: 9, name: "Master Sergeant", pointsRequired: 1500, pointsFromPrevious: 350 },
-        { level: 10, name: "Sergeant Major", pointsRequired: 1900, pointsFromPrevious: 400 },
-        { level: 11, name: "Second Lieutenant", pointsRequired: 2350, pointsFromPrevious: 450 },
-        { level: 12, name: "First Lieutenant", pointsRequired: 2850, pointsFromPrevious: 500 },
-        { level: 13, name: "Captain", pointsRequired: 3400, pointsFromPrevious: 550 },
+        // Mannschaft (2-5)
+        { level: 2, name: "Soldat", pointsRequired: 0, pointsFromPrevious: 0 },
+        { level: 3, name: "Obersoldat", pointsRequired: 100, pointsFromPrevious: 100 },
+        { level: 4, name: "Gefreiter", pointsRequired: 250, pointsFromPrevious: 150 },
+        { level: 5, name: "Obergefreiter", pointsRequired: 400, pointsFromPrevious: 150 },
+        // Unteroffiziersstab (6-10) 
+        { level: 6, name: "Unteroffizier", pointsRequired: 600, pointsFromPrevious: 200 },
+        { level: 7, name: "Stabsunteroffizier", pointsRequired: 850, pointsFromPrevious: 250 },
+        { level: 8, name: "Feldwebel", pointsRequired: 1150, pointsFromPrevious: 300 },
+        { level: 9, name: "Oberfeldwebel", pointsRequired: 1500, pointsFromPrevious: 350 },
+        { level: 10, name: "Hauptfeldwebel", pointsRequired: 1900, pointsFromPrevious: 400 },
+        // Offiziersstab (11-15)
+        { level: 11, name: "Leutnant", pointsRequired: 2350, pointsFromPrevious: 450 },  
+        { level: 12, name: "Oberleutnant", pointsRequired: 2850, pointsFromPrevious: 500 },
+        { level: 13, name: "Hauptmann", pointsRequired: 3400, pointsFromPrevious: 550 },
         { level: 14, name: "Major", pointsRequired: 4000, pointsFromPrevious: 600 },
-        { level: 15, name: "Colonel", pointsRequired: 4650, pointsFromPrevious: 650 },
+        { level: 15, name: "Oberst", pointsRequired: 4650, pointsFromPrevious: 650 },
       ];
 
       // Create default special positions

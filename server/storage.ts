@@ -47,7 +47,7 @@ export interface IStorage {
   updatePersonnel(id: number, updates: Partial<Personnel>): Promise<Personnel>;
   
   // Point entry operations
-  getPointEntries(personnelId?: number): Promise<PointEntry[]>;
+  getPointEntries(personnelId?: number, weekStart?: string): Promise<PointEntry[]>;
   createPointEntry(entry: InsertPointEntry): Promise<PointEntry>;
   getWeeklyPoints(personnelId: number, weekStart: string): Promise<PointEntry | undefined>;
   
@@ -208,11 +208,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Point entry operations
-  async getPointEntries(personnelId?: number): Promise<PointEntry[]> {
-    const query = db.select().from(pointEntries).orderBy(desc(pointEntries.weekStart));
+  async getPointEntries(personnelId?: number, weekStart?: string): Promise<PointEntry[]> {
+    let query = db.select().from(pointEntries).orderBy(desc(pointEntries.weekStart));
     
+    const conditions = [];
     if (personnelId) {
-      return await query.where(eq(pointEntries.personnelId, personnelId));
+      conditions.push(eq(pointEntries.personnelId, personnelId));
+    }
+    if (weekStart) {
+      conditions.push(eq(pointEntries.weekStart, weekStart));
+    }
+    
+    if (conditions.length > 0) {
+      return await query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
     }
     
     return await query;

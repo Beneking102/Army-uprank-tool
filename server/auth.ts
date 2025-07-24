@@ -33,7 +33,7 @@ export async function setupAuth(app: Express) {
   const PostgresSessionStore = connectPg(session);
   const sessionStore = new PostgresSessionStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
+    createTableIfMissing: false, // Don't try to create table/index as they already exist
     ttl: 7 * 24 * 60 * 60, // 7 days
   });
 
