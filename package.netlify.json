@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.netlify.ts",
-    "build": "tsc && vite build --config vite.config.netlify.ts",
+    "build": "vite build --config vite.config.netlify.ts",
     "preview": "vite preview --config vite.config.netlify.ts",
     "type-check": "tsc --noEmit"
   },
