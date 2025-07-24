@@ -37,14 +37,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add demo route before other routes
-app.get('/demo.html', (req, res) => {
+// Serve demo directly for root and demo.html
+app.get(['/', '/demo.html'], (req, res) => {
   res.sendFile(path.join(process.cwd(), 'demo.html'));
-});
-
-// Redirect root to demo
-app.get('/', (req, res) => {
-  res.redirect('/demo.html');
 });
 
 (async () => {
