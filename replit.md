@@ -8,6 +8,8 @@ This is a comprehensive Army faction management system for GTA RP servers. The a
 
 Preferred communication style: Simple, everyday language.
 
+**Recent Request (2025-01-24)**: User requested conversion to React SPA that can be hosted on Netlify with a demo preview mode without login for presentations.
+
 ## System Architecture
 
 ### Frontend Architecture
